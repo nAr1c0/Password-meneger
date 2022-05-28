@@ -3,8 +3,7 @@ import base64
 import json
 import os
 
-class Passw_meng():
-    salt = os.urandom(32).hex()
+class Passw_manag():
     app = tk.Tk()
     app.title("Менджер паролей")
     app["bg"] = "grey80"
@@ -171,9 +170,75 @@ class Passw_meng():
 
 ##############################################################################################
 
-main_app = Passw_meng()
-main_app.cr_data()
-main_app.cr_show_data()
-main_app.cr_hand_wr()
+class Logon():
+    logon = tk.Tk()
+    logon.title("Вход в систему")
+    logon["bg"] = "grey80"
+    logon.resizable(width=False, height=False)
+    f_top = tk.Frame(logon, bg="grey80")
+    f_top.pack()
+    f_bot = tk.Frame(logon, bg="grey80")
+    f_bot.pack()
 
-main_app.app.mainloop()
+    def cr_log(self):
+        self.lb_main = tk.Label(self.f_top, text = "Войдите в систему:")
+        self.lb_passw = tk.Label(self.f_top,text = "Пароль")
+        self.ent_passw = tk.Entry(self.f_top)
+        self.bt_go = tk.Button(self.f_top,text = "Вход", command=self.log)
+        self.lb_main.pack(side=tk.TOP)
+        self.lb_passw.pack(side=tk.TOP)
+        self.ent_passw.pack(side=tk.TOP)
+        self.bt_go.pack(side=tk.TOP)
+    
+    def cr_reg(self):
+        self.lb_reg = tk.Label(self.f_bot,text = "Придумайте пароль:")
+        self.ent_reg = tk.Entry(self.f_bot)
+        self.bt_reg = tk.Button(self.f_bot,text = "Регестрация", command=self.reg)
+        self.bt_reg.pack(side=tk.BOTTOM)
+        self.ent_reg.pack(side=tk.BOTTOM)
+        self.lb_reg.pack(side=tk.BOTTOM)
+    
+    def log(self):
+        data = json.load(open("user.json"))
+        passw = self.ent_passw.get()
+        passw_1 = str(data[0]["passw"])
+        passw_1 = passw_1.encode("UTF-8")
+        passw_1 = base64.b64decode(passw_1)
+        passw_1 = passw_1.decode("UTF-8")
+        if passw_1 == passw:
+            self.logon.destroy()
+            main_app = Passw_manag()
+            main_app.cr_data()
+            main_app.cr_show_data()
+            main_app.cr_hand_wr()
+
+            main_app.app.mainloop()
+        else:
+            self.lb_error = tk.Label(self.f_top, text = "Отказанно в доступе")
+            self.lb_error.pack(side=tk.BOTTOM)
+    
+    def reg(self):
+        data = json.load(open("user.json"))
+        passw = self.ent_reg.get()
+        passw = passw.encode("UTF-8")
+        passw = base64.b64encode(passw)
+        passw = passw.decode("UTF-8")
+        new_passw = {
+            "passw": f"{passw}"
+        }
+        data.append(new_passw)
+        file = open("user.json", "w")
+        json.dump(data, file)
+        self.lb_reg.destroy()
+        self.ent_reg.destroy()
+        self.bt_reg.destroy()
+
+##############################################################################################
+
+log_app = Logon()
+log_app.cr_log()
+a = os.path.getsize('user.json')
+if a == 2:
+    log_app.cr_reg()
+
+log_app.logon.mainloop()
